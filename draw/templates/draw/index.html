@@ -29,11 +29,10 @@
     var message = {};
   
     tool.onMouseMove = function(event) {
-      path.add(event.point); 
       message = {"x":event.point.x, "y":event.point.y};
       socket.send(JSON.stringify(message));
     }
-    
+  
     // getting the URL (you may want to use for Exercise 3)
     var url = window.location.href;
 
