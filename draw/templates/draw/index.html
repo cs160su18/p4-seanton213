@@ -25,13 +25,16 @@
   paper.setup(canvas);
   var tool = new paper.Tool();
   //var path = new paper.Path();
-  var paths = {};
+  //var paths = {};
+  var path;
   //path.strokeColor = 'black';
   var message = {};
   
   // getting the URL (you may want to use for Exercise 3)
   var url = window.location.href;
-
+  if (url == "http://p4-seanton213-seanton213692610.codeanyapp.com:8000/draw/?size=large") {
+      path = new paper.Path();
+   }
   var socket = new WebSocket(
    'ws://p4-seanton213-seanton213692610.codeanyapp.com:8765/');
   
@@ -49,6 +52,16 @@
     }
   var currentColor = getRandomColor();
   
+  function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, '\\$&');
+    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, ' '));
+  }
+  
   socket.onopen = function(event) {
     socket.send(JSON.stringify({id: socket.id, "open": true}));
   }
@@ -57,23 +70,31 @@
     var newMessage = JSON.parse(event.data);
     var newColor = newMessage["color"];
     var newPoint = new paper.Point(newMessage["x"], newMessage["y"]);
+    var newUrl = newMessage["url"];
+    
+    //if (!(newMessage.id in paths)) {
+    //paths[newMessage.id] = new paper.Path();
+    //}
 
-    if (!(newMessage.id in paths)) {
-      paths[newMessage.id] = new paper.Path();
-    }
       
-    if (socket.id !== newMessage.id) {
-      paths[newMessage.id].strokeColor = newColor;
-      paths[newMessage.id].add(newPoint);
+//     if (socket.id !== newMessage.id && newUrl !== "http://p4-seanton213-seanton213692610.codeanyapp.com:8000/draw/?size=large") {
+//       //paths[newMessage.id].strokeColor = newColor;
+//       //paths[newMessage.id].add(newPoint);
+//         path.strokeColor = newColor;
+//         path.add(newPoint);
+//     }
+  
+    if (socket.id !== newMessage.id && newUrl !== "http://p4-seanton213-seanton213692610.codeanyapp.com:8000/draw/?size=large") {
+      //paths[newMessage.id].strokeColor = newColor;
+      //paths[newMessage.id].add(newPoint);
+        path.strokeColor = newColor;
+        path.add(newPoint);
     }
   }  
 
   tool.onMouseMove = function(event) {
-    message = {"id": socket.id, "color": currentColor, "x":event.point.x, "y":event.point.y};
+    message = {"url": url, "id": socket.id, "color": currentColor, "x":event.point.x, "y":event.point.y};
     socket.send(JSON.stringify(message));
-    path.strokeColor = currentColor;
-    var point = new paper.Point(event.point.x, event.point.y);
-    path.add(point);
   }
  
   socket.onclose = function(event) {
