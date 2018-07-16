@@ -91,21 +91,22 @@
     
     
   }  
-
+  // generating multiple lines on local copy bc interference from main
   tool.onMouseMove = function(event) {
     message = {"url": url, "id": socket.id, "color": currentColor, "x":event.point.x, "y":event.point.y};
     socket.send(JSON.stringify(message));
     // Local art should be generated here.
     
     if (!(socket.id in paths) && url == "http://p4-seanton213-seanton213692610.codeanyapp.com:8000/draw/?size=small") {
-      paths[socket.id] = new paper.Path();
+      paths[socket.id] = new paper.Path();      
     }
     
-    var newPoint = new paper.Point(event.point.x, event.point.y);
-    if (url == "http://p4-seanton213-seanton213692610.codeanyapp.com:8000/draw/?size=small") {
-      paths[socket.id].strokeColor = currentColor;
-      paths[socket.id].add(newPoint);
-    }
+//     var newPoint = new paper.Point(event.point.x, event.point.y);
+//     if (url == "http://p4-seanton213-seanton213692610.codeanyapp.com:8000/draw/?size=small") {
+//       paths[socket.id].strokeColor = currentColor; //unneccecary
+//       paths[socket.id].add(newPoint);
+// //       console.log(socket.id)
+//     }
     
   }
  
@@ -145,28 +146,30 @@
   }
   
   //tilt detector. Not salt detector.
-//   window.ondeviceorientation = function(event) {
-//     if (event.gamma >= 60) {      
+  window.ondeviceorientation = function(event) {
+    if (event.gamma >= 45) {  //need to find way to access color info     
 //       var newMessage = JSON.parse(event.data);
-// //       var newColor = newMessage["color"];
-// //       paths[newMessage.id].strokeColor = newColor; 
+//       var newColor = newMessage["color"];
+//       paths[newMessage.id].strokeColor = newColor; 
 //       paths[newMessage.id].strokeColor = getRandomColor(); 
-//     } 
-//   }
+      currentColor = getRandomColor()
+//       console.log(event)
+    } 
+  }
   
   
-  window.addEventListener('deviceorientation', function(event) {
-    var absolute = event.absolute;
-    var alpha = event.alpha;
-    var beta = event.beta;
-    var gamma = event.gamma;
+//   window.addEventListener('deviceorientation', function(event) {
+//     var absolute = event.absolute;
+//     var alpha = event.alpha;
+//     var beta = event.beta;
+//     var gamma = event.gamma;
     
-    console.log(event);
+//     console.log(event);
     
-    if (gamma >= 45) {
-      paper.project.clear();
-    }
-  });
+//     if (gamma >= 45) {
+//       paper.project.clear();
+//     }
+//   });
 //   var handleOrientation = function(a, b, g) {
 //     if (g >= 60) {
       
