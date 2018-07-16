@@ -9,7 +9,8 @@
     <link rel="stylesheet" type="text/css" href="{% static 'draw/vendor/bootstrap/css/bootstrap.min.css' %}">
     <script type="text/javascript" src="{% static 'draw/vendor/jquery/jquery-3.3.1.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'draw/vendor/paper/paper-full.min.js' %}"></script>
-
+    <script type="text/javascript" src="{% static 'draw/vendor/shake/shake.js' %}"></script>
+  
     <style type="text/css">
     </style>
 
@@ -48,15 +49,15 @@
     }
   var currentColor = getRandomColor();
   
-  function getParameterByName(name, url) {
-    if (!url) url = window.location.href;
-    name = name.replace(/[\[\]]/g, '\\$&');
-    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-        results = regex.exec(url);
-    if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, ' '));
-  }
+//   function getParameterByName(name, url) {
+//     if (!url) url = window.location.href;
+//     name = name.replace(/[\[\]]/g, '\\$&');
+//     var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+//         results = regex.exec(url);
+//     if (!results) return null;
+//     if (!results[2]) return '';
+//     return decodeURIComponent(results[2].replace(/\+/g, ' '));
+//   }
   
   socket.onopen = function(event) {
     socket.send(JSON.stringify({id: socket.id, "open": true}));
@@ -67,6 +68,8 @@
     var newColor = newMessage["color"];
     var newPoint = new paper.Point(newMessage["x"], newMessage["y"]);
     var newUrl = newMessage["url"];
+    
+//     console.log(newMessage);
     
     if (!(newMessage.id in paths) && url == "http://p4-seanton213-seanton213692610.codeanyapp.com:8000/draw/?size=large") {
       paths[newMessage.id] = new paper.Path();
@@ -92,6 +95,18 @@
   tool.onMouseMove = function(event) {
     message = {"url": url, "id": socket.id, "color": currentColor, "x":event.point.x, "y":event.point.y};
     socket.send(JSON.stringify(message));
+    // Local art should be generated here.
+    
+    if (!(socket.id in paths) && url == "http://p4-seanton213-seanton213692610.codeanyapp.com:8000/draw/?size=small") {
+      paths[socket.id] = new paper.Path();
+    }
+    
+    var newPoint = new paper.Point(event.point.x, event.point.y);
+    if (url == "http://p4-seanton213-seanton213692610.codeanyapp.com:8000/draw/?size=small") {
+      paths[socket.id].strokeColor = currentColor;
+      paths[socket.id].add(newPoint);
+    }
+    
   }
  
   socket.onclose = function(event) {
@@ -99,37 +114,59 @@
   }
   
   //shake detector  
-  var sensitivity = 20; //threshold. Adjust as needed
-  window.addEventListener('devicemotion', function(event) {
-    var x = event.accelerationIncludingGravity.x;
-    var y = event.accelerationIncludingGravity.y;
-    var z = event.accelerationIncludingGravity.z;    
+//   var sensitivity = 20; //threshold. Adjust as needed
+//   window.addEventListener('devicemotion', function(event) {
+//     var x = event.accelerationIncludingGravity.x;
+//     var y = event.accelerationIncludingGravity.y;
+//     var z = event.accelerationIncludingGravity.z;  
+    
+//     console.log(x); // is null for some reason
+//     console.log(y);
+//     console.log(z);
 
-    if (x + y + z > sensitivity) {
-      // Shake detected, clear
-      // https://stackoverflow.com/questions/19054798/canvas-clear-in-paper-js
-      project.clear();
-    }
-  });
+//     if (x + y + z > sensitivity) {//a
+//       // Shake detected, clear
+//       // https://stackoverflow.com/questions/19054798/canvas-clear-in-paper-js
+//       project.clear();
+//     }
+//   });
   
-  //tilt detector. Not salt detector.
-  window.ondeviceorientation = function(event) {
-    if (event.gamma >= 60) {      
-      var newMessage = JSON.parse(event.data);
-//       var newColor = newMessage["color"];
-//       paths[newMessage.id].strokeColor = newColor; 
-      paths[newMessage.id].strokeColor = getRandomColor(); 
-    }
+//   // https://github.com/alexgibson/shake.js/
+  var myShakeEvent = new Shake({
+    threshold: 15, // optional shake strength threshold
+    timeout: 1000 // optional, determines the frequency of event generation
+  });
+  myShakeEvent.start();
+  window.addEventListener('shake', shakeEventDidOccur, false);
+  //function to call when shake occurs
+  function shakeEventDidOccur () {
+    //put your own code here etc.
+    paper.project.clear(); // https://stackoverflow.com/questions/19054798/canvas-clear-in-paper-js
   }
   
+  //tilt detector. Not salt detector.
+//   window.ondeviceorientation = function(event) {
+//     if (event.gamma >= 60) {      
+//       var newMessage = JSON.parse(event.data);
+// //       var newColor = newMessage["color"];
+// //       paths[newMessage.id].strokeColor = newColor; 
+//       paths[newMessage.id].strokeColor = getRandomColor(); 
+//     } 
+//   }
   
-//   window.addEventListener('deviceorientation', function(event) {
-//     var a = event.alpha;
-//     var b = event.beta;
-//     var g = event.gamma;
+  
+  window.addEventListener('deviceorientation', function(event) {
+    var absolute = event.absolute;
+    var alpha = event.alpha;
+    var beta = event.beta;
+    var gamma = event.gamma;
     
-//     handleOrientation(a, b, g);
-//   });
+    console.log(event);
+    
+    if (gamma >= 45) {
+      paper.project.clear();
+    }
+  });
 //   var handleOrientation = function(a, b, g) {
 //     if (g >= 60) {
       
