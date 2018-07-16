@@ -25,16 +25,12 @@
   paper.setup(canvas);
   var tool = new paper.Tool();
   //var path = new paper.Path();
-  //var paths = {};
-  var path;
+  var paths = {};
   //path.strokeColor = 'black';
   var message = {};
   
   // getting the URL (you may want to use for Exercise 3)
   var url = window.location.href;
-  if (url == "http://p4-seanton213-seanton213692610.codeanyapp.com:8000/draw/?size=large") {
-      path = new paper.Path();
-   }
   var socket = new WebSocket(
    'ws://p4-seanton213-seanton213692610.codeanyapp.com:8765/');
   
@@ -72,9 +68,9 @@
     var newPoint = new paper.Point(newMessage["x"], newMessage["y"]);
     var newUrl = newMessage["url"];
     
-    //if (!(newMessage.id in paths)) {
-    //paths[newMessage.id] = new paper.Path();
-    //}
+    if (!(newMessage.id in paths) && url == "http://p4-seanton213-seanton213692610.codeanyapp.com:8000/draw/?size=large") {
+      paths[newMessage.id] = new paper.Path();
+    }
 
       
 //     if (socket.id !== newMessage.id && newUrl !== "http://p4-seanton213-seanton213692610.codeanyapp.com:8000/draw/?size=large") {
@@ -84,12 +80,13 @@
 //         path.add(newPoint);
 //     }
   
-    if (socket.id !== newMessage.id && newUrl !== "http://p4-seanton213-seanton213692610.codeanyapp.com:8000/draw/?size=large") {
-      //paths[newMessage.id].strokeColor = newColor;
-      //paths[newMessage.id].add(newPoint);
-        path.strokeColor = newColor;
-        path.add(newPoint);
+    if (newUrl == "http://p4-seanton213-seanton213692610.codeanyapp.com:8000/draw/?size=small") {
+      paths[newMessage.id].strokeColor = newColor;
+      paths[newMessage.id].add(newPoint);
     }
+    
+    
+    
   }  
 
   tool.onMouseMove = function(event) {
@@ -100,5 +97,64 @@
   socket.onclose = function(event) {
     console.error('Chat socket closed unexpectedly');
   }
+  
+  //shake detector  
+  var sensitivity = 20; //threshold. Adjust as needed
+  window.addEventListener('devicemotion', function(event) {
+    var x = event.accelerationIncludingGravity.x;
+    var y = event.accelerationIncludingGravity.y;
+    var z = event.accelerationIncludingGravity.z;    
+
+    if (x + y + z > sensitivity) {
+      // Shake detected, clear
+      // https://stackoverflow.com/questions/19054798/canvas-clear-in-paper-js
+      project.clear();
+    }
+  });
+  
+  //tilt detector. Not salt detector.
+  window.ondeviceorientation = function(event) {
+    if (event.gamma >= 60) {      
+      var newMessage = JSON.parse(event.data);
+//       var newColor = newMessage["color"];
+//       paths[newMessage.id].strokeColor = newColor; 
+      paths[newMessage.id].strokeColor = getRandomColor(); 
+    }
+  }
+  
+  
+//   window.addEventListener('deviceorientation', function(event) {
+//     var a = event.alpha;
+//     var b = event.beta;
+//     var g = event.gamma;
+    
+//     handleOrientation(a, b, g);
+//   });
+//   var handleOrientation = function(a, b, g) {
+//     if (g >= 60) {
+      
+//     }
+//   };
+  
 </script>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
